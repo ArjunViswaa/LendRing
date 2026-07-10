@@ -24,7 +24,7 @@ async function updateProfile(userId, updates) {
     }
 
     const user = await User.findByIdAndUpdate(userId, allowed, {
-        new: true,
+        returnDocument: 'after',
         runValidators: true,
     }).select('-passwordHash');
 

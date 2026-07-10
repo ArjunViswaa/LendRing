@@ -1,31 +1,31 @@
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import SettingsPage from './pages/SettingsPage';
+import DashboardLayout from './layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import RequireRole from './components/RequireRole';
+import Placeholder from './components/Placeholder';
 import useAuth from './hooks/useAuth';
 
-// placeholder until the real dashboard layout lands on Day 6
-function Dashboard() {
-  const { user, logout } = useAuth();
+function Home() {
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Hi {user.name}</h1>
-      <p>You are signed in as a {user.role}. Trust score: {user.trustScore}</p>
-      <button onClick={logout}>Log out</button>
+    <main className="min-h-screen flex flex-col items-center justify-center gap-3 bg-gray-50">
+      <h1 className="text-3xl font-semibold text-gray-900">Lend-Ring</h1>
+      <p className="text-gray-600">Rent what you need, lend what you don't.</p>
+      <p className="text-sm">
+        <Link to="/login" className="underline">Log in</Link>
+        {' · '}
+        <Link to="/register" className="underline">Sign up</Link>
+      </p>
     </main>
   );
 }
 
-function Home() {
-  return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Lend-Ring</h1>
-      <p>Rent what you need, lend what you don't.</p>
-      <p>
-        <Link to="/login">Log in</Link> · <Link to="/register">Sign up</Link>
-      </p>
-    </main>
-  );
+function DashboardHome() {
+  const { user } = useAuth();
+  const startPage = { renter: 'browse', lender: 'listings', admin: 'users' }[user.role];
+  return <Navigate to={`/dashboard/${startPage}`} replace />;
 }
 
 function App() {
@@ -34,14 +34,33 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <DashboardLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route index element={<DashboardHome />} />
+        <Route path="settings" element={<SettingsPage />} />
+
+        {/* renter */}
+        <Route path="browse" element={<RequireRole role="renter"><Placeholder title="Browse items" /></RequireRole>} />
+        <Route path="orders" element={<RequireRole role="renter"><Placeholder title="My orders" /></RequireRole>} />
+
+        {/* lender */}
+        <Route path="listings" element={<RequireRole role="lender"><Placeholder title="My listings" /></RequireRole>} />
+        <Route path="add-item" element={<RequireRole role="lender"><Placeholder title="Add item" /></RequireRole>} />
+        <Route path="orders-received" element={<RequireRole role="lender"><Placeholder title="Orders received" /></RequireRole>} />
+
+        {/* admin */}
+        <Route path="users" element={<RequireRole role="admin"><Placeholder title="Users" /></RequireRole>} />
+        <Route path="moderate-listings" element={<RequireRole role="admin"><Placeholder title="Listings" /></RequireRole>} />
+        <Route path="disputes" element={<RequireRole role="admin"><Placeholder title="Disputes" /></RequireRole>} />
+        <Route path="transactions" element={<RequireRole role="admin"><Placeholder title="Transactions" /></RequireRole>} />
+      </Route>
     </Routes>
   );
 }

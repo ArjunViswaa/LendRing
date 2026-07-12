@@ -26,3 +26,4 @@ itemSchema.index({ category: 1, city: 1, ratePerDay: 1 });
 itemSchema.index({ lenderId: 1 });
 
 module.exports = mongoose.model('Item', itemSchema);
+module.exports.CATEGORIES = CATEGORIES;

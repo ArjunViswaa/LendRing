@@ -1,6 +1,7 @@
 const Item = require('../models/Item');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
+const imageService = require('./imageService');
 
 const EDITABLE_FIELDS = [
     'title',
@@ -15,6 +16,8 @@ const EDITABLE_FIELDS = [
 ];
 
 const BLOCKING_STATUSES = ['requested', 'approved', 'paid', 'active', 'returnRequested', 'disputed'];
+
+const MAX_PHOTOS = 5;
 
 async function getOwnedItem(itemId, lenderId) {
     const item = await Item.findById(itemId);
@@ -85,4 +88,36 @@ async function deleteItem(itemId, lenderId) {
     await item.deleteOne();
 }
 
-module.exports = { createItem, getLenderItems, getOwnedItem, updateItem, deleteItem };
+async function addPhotos(itemId, lenderId, fileBuffers) {
+    const item = await getOwnedItem(itemId, lenderId);
+
+    if (item.photos.length + fileBuffers.length > MAX_PHOTOS) {
+        const err = new Error(`A listing can have at most ${MAX_PHOTOS} photos`);
+        err.status = 400;
+        throw err;
+    }
+
+    const uploadedUrls = await Promise.all(
+        fileBuffers.map((buffer) => imageService.uploadImage(buffer))
+    );
+
+    item.photos.push(...uploadedUrls);
+    return item.save();
+}
+
+async function removePhoto(itemId, lenderId, photoUrl) {
+    const item = await getOwnedItem(itemId, lenderId);
+
+    const before = item.photos.length;
+    item.photos = item.photos.filter((url) => url !== photoUrl);
+
+    if (item.photos.length === before) {
+        const err = new Error('That photo is not on this listing');
+        err.status = 404;
+        throw err;
+    }
+
+    return item.save();
+}
+
+module.exports = { createItem, getLenderItems, getOwnedItem, updateItem, deleteItem, addPhotos, removePhoto };

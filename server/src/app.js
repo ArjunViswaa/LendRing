@@ -23,6 +23,12 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  if (err.name === 'MulterError') {
+    const message =
+      err.code === 'LIMIT_FILE_SIZE' ? 'Each photo must be under 5 MB' : err.message;
+    return res.status(400).json({ message });
+  }
+
   console.error(err);
   res.status(err.status || 500).json({ message: err.message || 'Something went wrong' });
 });

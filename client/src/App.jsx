@@ -2,6 +2,8 @@ import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SettingsPage from './pages/SettingsPage';
+import MyListingsPage from './pages/lender/MyListingsPage';
+import ItemFormPage from './pages/lender/ItemFormPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import RequireRole from './components/RequireRole';
@@ -51,8 +53,9 @@ function App() {
         <Route path="orders" element={<RequireRole role="renter"><Placeholder title="My orders" /></RequireRole>} />
 
         {/* lender */}
-        <Route path="listings" element={<RequireRole role="lender"><Placeholder title="My listings" /></RequireRole>} />
-        <Route path="add-item" element={<RequireRole role="lender"><Placeholder title="Add item" /></RequireRole>} />
+        <Route path="listings" element={<RequireRole role="lender"><MyListingsPage /></RequireRole>} />
+        <Route path="listings/:id/edit" element={<RequireRole role="lender"><ItemFormPage /></RequireRole>} />
+        <Route path="add-item" element={<RequireRole role="lender"><ItemFormPage /></RequireRole>} />
         <Route path="orders-received" element={<RequireRole role="lender"><Placeholder title="Orders received" /></RequireRole>} />
 
         {/* admin */}

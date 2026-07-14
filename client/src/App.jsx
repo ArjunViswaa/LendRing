@@ -6,6 +6,7 @@ import SettingsPage from './pages/SettingsPage';
 import MyListingsPage from './pages/lender/MyListingsPage';
 import ItemFormPage from './pages/lender/ItemFormPage';
 import BrowsePage from './pages/renter/BrowsePage';
+import ItemDetailPage from './pages/ItemDetailPage';
 
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -55,7 +56,7 @@ function App() {
 
         {/* renter */}
         <Route path="browse" element={<RequireRole role="renter"><BrowsePage /></RequireRole>} />
-        <Route path="items/:id" element={<Placeholder title="Item detail" />} />
+        <Route path="items/:id" element={<ItemDetailPage />} />
         <Route path="orders" element={<RequireRole role="renter"><Placeholder title="My orders" /></RequireRole>} />
 
         {/* lender */}

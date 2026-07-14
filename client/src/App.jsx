@@ -1,13 +1,18 @@
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
+
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import SettingsPage from './pages/SettingsPage';
 import MyListingsPage from './pages/lender/MyListingsPage';
 import ItemFormPage from './pages/lender/ItemFormPage';
+import BrowsePage from './pages/renter/BrowsePage';
+
 import DashboardLayout from './layouts/DashboardLayout';
+
 import ProtectedRoute from './components/ProtectedRoute';
 import RequireRole from './components/RequireRole';
 import Placeholder from './components/Placeholder';
+
 import useAuth from './hooks/useAuth';
 
 function Home() {
@@ -49,7 +54,8 @@ function App() {
         <Route path="settings" element={<SettingsPage />} />
 
         {/* renter */}
-        <Route path="browse" element={<RequireRole role="renter"><Placeholder title="Browse items" /></RequireRole>} />
+        <Route path="browse" element={<RequireRole role="renter"><BrowsePage /></RequireRole>} />
+        <Route path="items/:id" element={<Placeholder title="Item detail" />} />
         <Route path="orders" element={<RequireRole role="renter"><Placeholder title="My orders" /></RequireRole>} />
 
         {/* lender */}

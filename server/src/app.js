@@ -18,6 +18,8 @@ app.use('/api/users', require('./routes/userRoutes'));
 
 app.use('/api/items', require('./routes/itemRoutes'));
 
+app.use('/api/browse', require('./routes/browseRoutes'));
+
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });

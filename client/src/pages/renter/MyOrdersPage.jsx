@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
 import { fetchMyBookings, cancelBooking } from '../../api/bookings';
+import { createPaymentOrder, verifyPayment } from '../../api/payments';
 import { formatPaise } from '../../utils/money';
 import { formatDateRange } from '../../utils/dates';
 import { card, btnPrimary, btnDanger } from '../../utils/ui';
@@ -10,6 +12,8 @@ function MyOrdersPage() {
     const [bookings, setBookings] = useState(null);
     const [error, setError] = useState('');
     const justRequested = useLocation().state?.justRequested;
+
+    const { user } = useAuth();
 
     useEffect(() => {
         fetchMyBookings()
@@ -24,6 +28,37 @@ function MyOrdersPage() {
             setBookings(bookings.map((b) => (b._id === booking._id ? { ...b, status: updated.status } : b)));
         } catch (err) {
             alert(err.response?.data?.message || 'Could not cancel');
+        }
+    }
+
+    async function handlePay(booking) {
+        try {
+            const order = await createPaymentOrder(booking._id);
+
+            const razorpay = new window.Razorpay({
+                key: order.keyId,
+                order_id: order.orderId,
+                amount: order.amount,
+                currency: order.currency,
+                name: 'Lend-Ring',
+                description: order.itemTitle,
+                prefill: { name: user.name, email: user.email },
+                theme: { color: '#0f766e' },
+                handler: async (response) => {
+                    try {
+                        const updated = await verifyPayment(response);
+                        setBookings((prev) =>
+                            prev.map((b) => (b._id === booking._id ? { ...b, status: updated.status } : b))
+                        );
+                    } catch (err) {
+                        alert(err.response?.data?.message || 'Payment verification failed');
+                    }
+                },
+            });
+
+            razorpay.open();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Could not start the payment');
         }
     }
 
@@ -68,7 +103,7 @@ function MyOrdersPage() {
                                 <StatusBadge status={b.status} />
 
                                 {b.status === 'approved' && (
-                                    <button disabled className={`${btnPrimary} text-xs cursor-not-allowed`} title="Payments launching soon">
+                                    <button onClick={() => handlePay(b)} className={`${btnPrimary} text-xs`}>
                                         Pay {formatPaise(b.totalAmount)}
                                     </button>
                                 )}

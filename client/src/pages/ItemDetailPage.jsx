@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 import { Link, useParams } from 'react-router-dom';
+
 import { fetchItemDetail } from '../api/browse';
+import { requestBooking } from '../api/bookings';
 import { formatPaise } from '../utils/money';
 import { card, input, btnPrimary } from '../utils/ui';
 
@@ -12,11 +16,15 @@ function countDays(start, end) {
 
 function ItemDetailPage() {
     const { id } = useParams();
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     const [item, setItem] = useState(null);
     const [notFound, setNotFound] = useState(false);
     const [mainPhoto, setMainPhoto] = useState(null);
     const [dates, setDates] = useState({ start: '', end: '' });
+    const [bookingError, setBookingError] = useState('');
+    const [requesting, setRequesting] = useState(false);
 
     useEffect(() => {
         fetchItemDetail(id)
@@ -159,11 +167,23 @@ function ItemDetailPage() {
                         </div>
                     )}
 
-                    <button disabled className={`${btnPrimary} w-full mt-4 cursor-not-allowed`} title="Booking opens soon">
-                        Request booking
-                    </button>
+                    {bookingError && <p className="mt-3 text-sm text-red-600">{bookingError}</p>}
+
+                    {user.role === 'renter' ? (
+                        <button
+                            onClick={handleRequestBooking}
+                            disabled={days < 1 || requesting}
+                            className={`${btnPrimary} w-full mt-4`}
+                        >
+                            {requesting ? 'Sending request...' : days < 1 ? 'Select your dates' : 'Request booking'}
+                        </button>
+                    ) : (
+                        <p className="mt-4 text-xs text-gray-400 text-center">
+                            Log in as a renter to book this item.
+                        </p>
+                    )}
                     <p className="mt-2 text-xs text-gray-400 text-center">
-                        Bookings are being wired up - coming this week.
+                        You only pay after the lender approves your request.
                     </p>
                 </div>
             </div>

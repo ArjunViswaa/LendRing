@@ -7,6 +7,8 @@ import MyListingsPage from './pages/lender/MyListingsPage';
 import ItemFormPage from './pages/lender/ItemFormPage';
 import BrowsePage from './pages/renter/BrowsePage';
 import ItemDetailPage from './pages/ItemDetailPage';
+import MyOrdersPage from './pages/renter/MyOrdersPage';
+import OrdersReceivedPage from './pages/lender/OrdersReceivedPage';
 
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -57,13 +59,13 @@ function App() {
         {/* renter */}
         <Route path="browse" element={<RequireRole role="renter"><BrowsePage /></RequireRole>} />
         <Route path="items/:id" element={<ItemDetailPage />} />
-        <Route path="orders" element={<RequireRole role="renter"><Placeholder title="My orders" /></RequireRole>} />
+        <Route path="orders" element={<RequireRole role="renter"><MyOrdersPage /></RequireRole>} />
 
         {/* lender */}
         <Route path="listings" element={<RequireRole role="lender"><MyListingsPage /></RequireRole>} />
         <Route path="listings/:id/edit" element={<RequireRole role="lender"><ItemFormPage /></RequireRole>} />
         <Route path="add-item" element={<RequireRole role="lender"><ItemFormPage /></RequireRole>} />
-        <Route path="orders-received" element={<RequireRole role="lender"><Placeholder title="Orders received" /></RequireRole>} />
+        <Route path="orders-received" element={<RequireRole role="lender"><OrdersReceivedPage /></RequireRole>} />
 
         {/* admin */}
         <Route path="users" element={<RequireRole role="admin"><Placeholder title="Users" /></RequireRole>} />

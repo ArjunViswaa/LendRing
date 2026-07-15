@@ -35,6 +35,18 @@ function ItemDetailPage() {
             .catch(() => setNotFound(true));
     }, [id]);
 
+    async function handleRequestBooking() {
+        setBookingError('');
+        setRequesting(true);
+        try {
+            await requestBooking(id, dates.start, dates.end);
+            navigate('/dashboard/orders', { state: { justRequested: true } });
+        } catch (err) {
+            setBookingError(err.response?.data?.message || 'Could not request this booking');
+            setRequesting(false);
+        }
+    }
+
     if (notFound) {
         return (
             <div>

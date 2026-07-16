@@ -6,6 +6,13 @@ const app = express();
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173' }));
+
+app.post(
+  '/api/payments/webhook',
+  express.raw({ type: 'application/json' }),
+  require('./controllers/webhookController').razorpayWebhook
+);
+
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {

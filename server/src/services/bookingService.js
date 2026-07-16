@@ -110,7 +110,7 @@ async function cancelBooking(bookingId, renterId) {
     }
 
     booking.status = 'cancelled';
-    
+
     return booking.save();
 }
 
@@ -127,6 +127,29 @@ async function getLenderBookings(lenderId) {
         .populate('renterId', 'name trustScore city');
 }
 
+async function markHandover(bookingId, lenderId) {
+    const booking = await getOwnedBooking(bookingId, lenderId, 'lenderId');
+
+    if (booking.status !== 'paid') {
+        throw httpError(409, `A ${booking.status} booking cannot be handed over`);
+    }
+
+    booking.status = 'active';
+    return booking.save();
+}
+
+async function markReturn(bookingId, renterId) {
+    const booking = await getOwnedBooking(bookingId, renterId, 'renterId');
+
+    if (booking.status !== 'active') {
+        throw httpError(409, `A ${booking.status} booking cannot be marked as returned`);
+    }
+
+    booking.status = 'returnRequested';
+    booking.returnMarkedAt = new Date();
+    return booking.save();
+}
+
 module.exports = {
     requestBooking,
     approveBooking,
@@ -134,4 +157,6 @@ module.exports = {
     cancelBooking,
     getRenterBookings,
     getLenderBookings,
+    markHandover,
+    markReturn,
 };

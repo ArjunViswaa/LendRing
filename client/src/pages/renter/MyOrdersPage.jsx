@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import { fetchMyBookings, cancelBooking } from '../../api/bookings';
+import { fetchMyBookings, cancelBooking, markReturn } from '../../api/bookings';
 import { createPaymentOrder, verifyPayment } from '../../api/payments';
 import { formatPaise } from '../../utils/money';
 import { formatDateRange } from '../../utils/dates';
@@ -62,6 +62,15 @@ function MyOrdersPage() {
         }
     }
 
+    async function handleReturn(booking) {
+        try {
+            const updated = await markReturn(booking._id);
+            setBookings(bookings.map((b) => (b._id === booking._id ? { ...b, status: updated.status } : b)));
+        } catch (err) {
+            alert(err.response?.data?.message || 'Could not mark the return');
+        }
+    }
+
     if (error) return <p className="text-red-600">{error}</p>;
     if (!bookings) return <p className="text-gray-500">Loading your orders...</p>;
 
@@ -111,6 +120,18 @@ function MyOrdersPage() {
                                     <button onClick={() => handleCancel(b)} className={`${btnDanger} text-xs`}>
                                         Cancel
                                     </button>
+                                )}
+                                {b.status === 'active' && (
+                                    <button onClick={() => handleReturn(b)} className={`${btnPrimary} text-xs`}>
+                                        Mark as returned
+                                    </button>
+                                )}
+                                {b.status === 'completed' && (
+                                    <p className="text-xs text-gray-500 text-right">
+                                        {b.latePenalty > 0
+                                            ? `${formatPaise(b.depositAmount - b.latePenalty)} refunded (${formatPaise(b.latePenalty)} late penalty)`
+                                            : 'Deposit refunded in full'}
+                                    </p>
                                 )}
                             </div>
                         </div>

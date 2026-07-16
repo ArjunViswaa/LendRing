@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchReceivedBookings, approveBooking, declineBooking } from '../../api/bookings';
+import { fetchReceivedBookings, approveBooking, declineBooking, markHandover, confirmReturn } from '../../api/bookings';
 import { formatPaise } from '../../utils/money';
 import { formatDateRange } from '../../utils/dates';
 import { card, btnPrimary, btnSecondary } from '../../utils/ui';
@@ -21,6 +21,22 @@ function OrdersReceivedPage() {
         try {
             const updated = await (action === 'approve' ? approveBooking(booking._id) : declineBooking(booking._id));
             setBookings(bookings.map((b) => (b._id === booking._id ? { ...b, status: updated.status } : b)));
+        } catch (err) {
+            setActionError(err.response?.data?.message || `Could not ${action} this booking`);
+        }
+    }
+
+    async function act(booking, action) {
+        setActionError('');
+        const calls = {
+            approve: approveBooking,
+            decline: declineBooking,
+            handover: markHandover,
+            confirmReturn: confirmReturn,
+        };
+        try {
+            const updated = await calls[action](booking._id);
+            setBookings(bookings.map((b) => (b._id === booking._id ? { ...b, ...updated } : b)));
         } catch (err) {
             setActionError(err.response?.data?.message || `Could not ${action} this booking`);
         }
@@ -75,6 +91,16 @@ function OrdersReceivedPage() {
                                             Decline
                                         </button>
                                     </div>
+                                )}
+                                {b.status === 'paid' && (
+                                    <button onClick={() => act(b, 'handover')} className={`${btnPrimary} text-xs`}>
+                                        Confirm handover
+                                    </button>
+                                )}
+                                {['active', 'returnRequested'].includes(b.status) && (
+                                    <button onClick={() => act(b, 'confirmReturn')} className={`${btnPrimary} text-xs`}>
+                                        Confirm return
+                                    </button>
                                 )}
                             </div>
                         </div>

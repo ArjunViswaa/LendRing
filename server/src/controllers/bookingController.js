@@ -1,4 +1,5 @@
 const bookingService = require('../services/bookingService');
+const returnService = require('../services/returnService');
 const { isValidDateString } = require('../utils/dates');
 
 async function request(req, res, next) {
@@ -56,4 +57,28 @@ async function cancel(req, res, next) {
     }
 }
 
-module.exports = { request, mine, received, approve, decline, cancel };
+async function handover(req, res, next) {
+    try {
+        res.json({ booking: await bookingService.markHandover(req.params.id, req.user.id) });
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function markReturned(req, res, next) {
+    try {
+        res.json({ booking: await bookingService.markReturn(req.params.id, req.user.id) });
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function confirmReturn(req, res, next) {
+    try {
+        res.json({ booking: await returnService.confirmReturn(req.params.id, req.user.id) });
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { request, mine, received, approve, decline, cancel, handover, markReturned, confirmReturn };

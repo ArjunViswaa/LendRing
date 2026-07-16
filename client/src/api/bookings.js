@@ -29,3 +29,18 @@ export async function cancelBooking(id) {
     const { data } = await api.put(`/bookings/${id}/cancel`);
     return data.booking;
 }
+
+export async function markHandover(id) {
+    const { data } = await api.put(`/bookings/${id}/handover`);
+    return data.booking;
+}
+
+export async function markReturn(id) {
+    const { data } = await api.put(`/bookings/${id}/return`);
+    return data.booking;
+}
+
+export async function confirmReturn(id) {
+    const { data } = await api.put(`/bookings/${id}/confirm-return`);
+    return data.booking;
+}

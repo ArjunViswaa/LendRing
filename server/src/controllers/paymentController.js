@@ -30,4 +30,20 @@ async function verify(req, res, next) {
     }
 }
 
-module.exports = { createOrder, verify };
+async function earnings(req, res, next) {
+    try {
+        res.json(await paymentService.getLenderEarnings(req.user.id));
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function allPayments(req, res, next) {
+    try {
+        res.json(await paymentService.getAllPayments(req.query.page));
+    } catch (err) {
+        next(err);
+    }
+}
+
+module.exports = { createOrder, verify, earnings, allPayments };

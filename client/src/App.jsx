@@ -9,6 +9,7 @@ import BrowsePage from './pages/renter/BrowsePage';
 import ItemDetailPage from './pages/ItemDetailPage';
 import MyOrdersPage from './pages/renter/MyOrdersPage';
 import OrdersReceivedPage from './pages/lender/OrdersReceivedPage';
+import EarningsPage from './pages/lender/EarningsPage';
 
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -66,6 +67,7 @@ function App() {
         <Route path="listings/:id/edit" element={<RequireRole role="lender"><ItemFormPage /></RequireRole>} />
         <Route path="add-item" element={<RequireRole role="lender"><ItemFormPage /></RequireRole>} />
         <Route path="orders-received" element={<RequireRole role="lender"><OrdersReceivedPage /></RequireRole>} />
+        <Route path="earnings" element={<RequireRole role="lender"><EarningsPage /></RequireRole>} />
 
         {/* admin */}
         <Route path="users" element={<RequireRole role="admin"><Placeholder title="Users" /></RequireRole>} />

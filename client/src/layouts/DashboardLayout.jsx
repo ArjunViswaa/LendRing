@@ -11,6 +11,7 @@ const NAV_BY_ROLE = {
         { to: '/dashboard/listings', label: 'My listings' },
         { to: '/dashboard/add-item', label: 'Add item' },
         { to: '/dashboard/orders-received', label: 'Orders received' },
+        { to: '/dashboard/earnings', label: 'Earnings' },
         { to: '/dashboard/settings', label: 'Settings' },
     ],
     admin: [

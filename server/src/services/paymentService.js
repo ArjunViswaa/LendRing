@@ -1,4 +1,6 @@
 const crypto = require('crypto');
+const mongoose = require('mongoose');
+
 const razorpay = require('../config/razorpay');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
@@ -82,4 +84,69 @@ async function verifyPayment(renterId, { orderId, paymentId, signature }) {
     return booking;
 }
 
-module.exports = { createOrderForBooking, verifyPayment };
+async function getLenderEarnings(lenderId) {
+    const lenderObjectId = new mongoose.Types.ObjectId(lenderId);
+
+    const [summary] = await Payment.aggregate([
+        { $match: { type: 'charge', status: 'paid' } },
+        { $lookup: { from: 'bookings', localField: 'bookingId', foreignField: '_id', as: 'booking' } },
+        { $unwind: '$booking' },
+        { $match: { 'booking.lenderId': lenderObjectId } },
+        {
+            $group: {
+                _id: null,
+                totalEarned: { $sum: '$split.lenderPayable' },
+                feesPaid: { $sum: '$split.platformFee' },
+                depositsHeld: { $sum: '$split.heldDeposit' },
+                paidBookings: { $sum: 1 },
+            },
+        },
+    ]);
+
+    const bookingIds = await Booking.find({ lenderId }).distinct('_id');
+    const payments = await Payment.find({
+        bookingId: { $in: bookingIds },
+        type: 'charge',
+        status: 'paid',
+    })
+        .sort({ updatedAt: -1 })
+        .populate({
+            path: 'bookingId',
+            select: 'startDate endDate itemId renterId',
+            populate: [
+                { path: 'itemId', select: 'title' },
+                { path: 'renterId', select: 'name' },
+            ],
+        });
+
+    return {
+        summary: summary || { totalEarned: 0, feesPaid: 0, depositsHeld: 0, paidBookings: 0 },
+        payments,
+    };
+}
+
+async function getAllPayments(page = 1) {
+    const perPage = 20;
+    const currentPage = Math.max(Number(page) || 1, 1);
+
+    const [payments, total] = await Promise.all([
+        Payment.find()
+            .sort({ updatedAt: -1 })
+            .skip((currentPage - 1) * perPage)
+            .limit(perPage)
+            .populate({
+                path: 'bookingId',
+                select: 'itemId renterId lenderId startDate endDate',
+                populate: [
+                    { path: 'itemId', select: 'title' },
+                    { path: 'renterId', select: 'name email' },
+                    { path: 'lenderId', select: 'name email' },
+                ],
+            }),
+        Payment.countDocuments(),
+    ]);
+
+    return { payments, total, page: currentPage, pages: Math.ceil(total / perPage) };
+}
+
+module.exports = { createOrderForBooking, verifyPayment, getLenderEarnings, getAllPayments };

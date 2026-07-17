@@ -33,6 +33,8 @@ app.use('/api/payments', require('./routes/paymentRoutes'));
 
 app.use('/api/disputes', require('./routes/disputeRoutes'));
 
+app.use('/api/reviews', require('./routes/reviewRoutes'));
+
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });

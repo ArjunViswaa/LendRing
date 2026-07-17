@@ -3,6 +3,7 @@ const Dispute = require('../models/Dispute');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
 const imageService = require('./imageService');
+const { recomputeTrustScore } = require('./trustScoreService');
 
 function httpError(status, message) {
     const err = new Error(message);
@@ -110,6 +111,9 @@ async function resolveDispute(disputeId, adminId, { renterRefund, lenderCompensa
     booking.latePenalty = lenderCompensation;
     booking.returnConfirmedAt = new Date();
     await booking.save();
+
+    await recomputeTrustScore(booking.renterId);
+    await recomputeTrustScore(booking.lenderId);
 
     return dispute;
 }

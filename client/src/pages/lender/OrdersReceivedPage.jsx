@@ -4,7 +4,9 @@ import { formatPaise } from '../../utils/money';
 import { formatDateRange } from '../../utils/dates';
 import { card, btnPrimary, btnSecondary, btnDanger, input } from '../../utils/ui';
 import StatusBadge from '../../components/StatusBadge';
+import ReviewForm from '../../components/ReviewForm';
 
+import { fetchGivenReviews } from '../../api/reviews';
 import { raiseDispute } from '../../api/disputes';
 
 function OrdersReceivedPage() {
@@ -14,11 +16,14 @@ function OrdersReceivedPage() {
     const [disputeFor, setDisputeFor] = useState(null); // booking id with open form
     const [disputeForm, setDisputeForm] = useState({ reason: 'damage', description: '', files: [] });
     const [submittingDispute, setSubmittingDispute] = useState(false);
+    const [reviewedIds, setReviewedIds] = useState([]);
+    const [reviewOpen, setReviewOpen] = useState(null);
 
     useEffect(() => {
         fetchReceivedBookings()
             .then(setBookings)
             .catch(() => setError('Could not load bookings'));
+        fetchGivenReviews().then(setReviewedIds).catch(() => { });
     }, []);
 
     async function act(booking, action) {
@@ -127,6 +132,14 @@ function OrdersReceivedPage() {
                                         Report damage
                                     </button>
                                 )}
+                                {b.status === 'completed' && !reviewedIds.includes(b._id) && (
+                                    <button
+                                        onClick={() => setReviewOpen(reviewOpen === b._id ? null : b._id)}
+                                        className={`${btnSecondary} text-xs`}
+                                    >
+                                        Rate renter
+                                    </button>
+                                )}
                             </div>
                             {disputeFor === b._id && (
                                 <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3">
@@ -164,9 +177,20 @@ function OrdersReceivedPage() {
                                     </button>
                                 </div>
                             )}
+
+                            {reviewOpen === b._id && (
+                                <ReviewForm
+                                    bookingId={b._id}
+                                    counterpartName={b.renterId?.name || 'the renter'}
+                                    onDone={(id) => {
+                                        setReviewedIds([...reviewedIds, id]);
+                                        setReviewOpen(null);
+                                    }}
+                                />
+                            )}
                         </div>
                     ))}
-                </div>
+                    </div>
             )}
         </div>
     );

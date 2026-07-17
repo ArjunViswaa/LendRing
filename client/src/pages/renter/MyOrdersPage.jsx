@@ -5,12 +5,16 @@ import { fetchMyBookings, cancelBooking, markReturn } from '../../api/bookings';
 import { createPaymentOrder, verifyPayment } from '../../api/payments';
 import { formatPaise } from '../../utils/money';
 import { formatDateRange } from '../../utils/dates';
-import { card, btnPrimary, btnDanger } from '../../utils/ui';
+import { card, btnPrimary, btnDanger, btnSecondary } from '../../utils/ui';
 import StatusBadge from '../../components/StatusBadge';
+import ReviewForm from '../../components/ReviewForm';
+import { fetchGivenReviews } from '../../api/reviews';
 
 function MyOrdersPage() {
     const [bookings, setBookings] = useState(null);
     const [error, setError] = useState('');
+    const [reviewedIds, setReviewedIds] = useState([]);
+    const [reviewOpen, setReviewOpen] = useState(null);
     const justRequested = useLocation().state?.justRequested;
 
     const { user } = useAuth();
@@ -19,6 +23,7 @@ function MyOrdersPage() {
         fetchMyBookings()
             .then(setBookings)
             .catch(() => setError('Could not load your orders'));
+        fetchGivenReviews().then(setReviewedIds).catch(() => { });
     }, []);
 
     async function handleCancel(booking) {
@@ -136,7 +141,25 @@ function MyOrdersPage() {
                                 {b.status === 'disputed' && (
                                     <p className="text-xs text-gray-500 text-right">Deposit held pending admin review</p>
                                 )}
+                                {b.status === 'completed' && !reviewedIds.includes(b._id) && (
+                                    <button
+                                        onClick={() => setReviewOpen(reviewOpen === b._id ? null : b._id)}
+                                        className={`${btnSecondary} text-xs`}
+                                    >
+                                        Rate lender
+                                    </button>
+                                )}
                             </div>
+                            {reviewOpen === b._id && (
+                                <ReviewForm
+                                    bookingId={b._id}
+                                    counterpartName="the lender"
+                                    onDone={(id) => {
+                                        setReviewedIds([...reviewedIds, id]);
+                                        setReviewOpen(null);
+                                    }}
+                                />
+                            )}
                         </div>
                     ))}
                 </div>

@@ -122,6 +122,11 @@ function ItemDetailPage() {
                                 {new Date(lender.createdAt).getFullYear()}
                             </p>
                         </div>
+                        {item.avgRating > 0 && (
+                            <p className="mt-1 text-sm text-amber-500">
+                                ★ {item.avgRating} <span className="text-gray-400">item rating</span>
+                            </p>
+                        )}
                         <div className="text-center">
                             <p className="text-lg font-semibold text-brand-700">{lender.trustScore}</p>
                             <p className="text-xs text-gray-500">trust score</p>

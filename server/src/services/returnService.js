@@ -2,6 +2,7 @@ const razorpay = require('../config/razorpay');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
 const { countDays } = require('../utils/dates');
+const { recomputeTrustScore } = require('./trustScoreService');
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 
@@ -17,7 +18,7 @@ async function confirmReturn(bookingId, lenderId) {
     if (booking.lenderId.toString() !== lenderId) {
         throw httpError(403, 'This booking does not involve you');
     }
-    
+
     if (!['active', 'returnRequested'].includes(booking.status)) {
         throw httpError(409, `A ${booking.status} booking cannot be settled`);
     }
@@ -59,6 +60,9 @@ async function confirmReturn(bookingId, lenderId) {
         amount: booking.rentAmount - booking.platformFee + latePenalty,
         status: 'created',
     });
+
+    await recomputeTrustScore(booking.renterId);
+    await recomputeTrustScore(booking.lenderId);
 
     booking.status = 'completed';
     booking.lateDays = lateDays;

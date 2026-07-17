@@ -2,13 +2,18 @@ import { useEffect, useState } from 'react';
 import { fetchReceivedBookings, approveBooking, declineBooking, markHandover, confirmReturn } from '../../api/bookings';
 import { formatPaise } from '../../utils/money';
 import { formatDateRange } from '../../utils/dates';
-import { card, btnPrimary, btnSecondary } from '../../utils/ui';
+import { card, btnPrimary, btnSecondary, btnDanger, input } from '../../utils/ui';
 import StatusBadge from '../../components/StatusBadge';
+
+import { raiseDispute } from '../../api/disputes';
 
 function OrdersReceivedPage() {
     const [bookings, setBookings] = useState(null);
     const [error, setError] = useState('');
     const [actionError, setActionError] = useState('');
+    const [disputeFor, setDisputeFor] = useState(null); // booking id with open form
+    const [disputeForm, setDisputeForm] = useState({ reason: 'damage', description: '', files: [] });
+    const [submittingDispute, setSubmittingDispute] = useState(false);
 
     useEffect(() => {
         fetchReceivedBookings()
@@ -39,6 +44,21 @@ function OrdersReceivedPage() {
             setBookings(bookings.map((b) => (b._id === booking._id ? { ...b, ...updated } : b)));
         } catch (err) {
             setActionError(err.response?.data?.message || `Could not ${action} this booking`);
+        }
+    }
+
+    async function submitDispute(booking) {
+        setActionError('');
+        setSubmittingDispute(true);
+        try {
+            await raiseDispute({ bookingId: booking._id, ...disputeForm });
+            setBookings(bookings.map((b) => (b._id === booking._id ? { ...b, status: 'disputed' } : b)));
+            setDisputeFor(null);
+            setDisputeForm({ reason: 'damage', description: '', files: [] });
+        } catch (err) {
+            setActionError(err.response?.data?.message || 'Could not raise the dispute');
+        } finally {
+            setSubmittingDispute(false);
         }
     }
 
@@ -102,7 +122,48 @@ function OrdersReceivedPage() {
                                         Confirm return
                                     </button>
                                 )}
+                                {['active', 'returnRequested'].includes(b.status) && (
+                                    <button onClick={() => setDisputeFor(disputeFor === b._id ? null : b._id)} className={`${btnDanger} text-xs`}>
+                                        Report damage
+                                    </button>
+                                )}
                             </div>
+                            {disputeFor === b._id && (
+                                <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3">
+                                    <div className="flex gap-3">
+                                        <select
+                                            value={disputeForm.reason}
+                                            onChange={(e) => setDisputeForm({ ...disputeForm, reason: e.target.value })}
+                                            className={`${input} text-sm`}
+                                        >
+                                            <option value="damage">Item damaged</option>
+                                            <option value="notReturned">Not returned</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            onChange={(e) => setDisputeForm({ ...disputeForm, files: Array.from(e.target.files) })}
+                                            className="text-sm self-center"
+                                        />
+                                    </div>
+                                    <textarea
+                                        rows={2}
+                                        placeholder="Describe what happened - the admin will review this with your photos"
+                                        value={disputeForm.description}
+                                        onChange={(e) => setDisputeForm({ ...disputeForm, description: e.target.value })}
+                                        className={`${input} text-sm`}
+                                    />
+                                    <button
+                                        onClick={() => submitDispute(b)}
+                                        disabled={submittingDispute || !disputeForm.description}
+                                        className={`${btnDanger} text-xs self-start`}
+                                    >
+                                        {submittingDispute ? 'Submitting...' : 'Submit dispute'}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

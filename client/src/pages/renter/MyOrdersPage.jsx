@@ -129,9 +129,12 @@ function MyOrdersPage() {
                                 {b.status === 'completed' && (
                                     <p className="text-xs text-gray-500 text-right">
                                         {b.latePenalty > 0
-                                            ? `${formatPaise(b.depositAmount - b.latePenalty)} refunded (${formatPaise(b.latePenalty)} late penalty)`
+                                            ? `${formatPaise(b.depositAmount - b.latePenalty)} refunded (${formatPaise(b.latePenalty)} deducted)`
                                             : 'Deposit refunded in full'}
                                     </p>
+                                )}
+                                {b.status === 'disputed' && (
+                                    <p className="text-xs text-gray-500 text-right">Deposit held pending admin review</p>
                                 )}
                             </div>
                         </div>

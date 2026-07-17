@@ -10,6 +10,7 @@ import ItemDetailPage from './pages/ItemDetailPage';
 import MyOrdersPage from './pages/renter/MyOrdersPage';
 import OrdersReceivedPage from './pages/lender/OrdersReceivedPage';
 import EarningsPage from './pages/lender/EarningsPage';
+import DisputesPage from './pages/admin/DisputesPage';
 
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -72,8 +73,8 @@ function App() {
         {/* admin */}
         <Route path="users" element={<RequireRole role="admin"><Placeholder title="Users" /></RequireRole>} />
         <Route path="moderate-listings" element={<RequireRole role="admin"><Placeholder title="Listings" /></RequireRole>} />
-        <Route path="disputes" element={<RequireRole role="admin"><Placeholder title="Disputes" /></RequireRole>} />
         <Route path="transactions" element={<RequireRole role="admin"><Placeholder title="Transactions" /></RequireRole>} />
+        <Route path="disputes" element={<RequireRole role="admin"><DisputesPage /></RequireRole>} />
       </Route>
     </Routes>
   );

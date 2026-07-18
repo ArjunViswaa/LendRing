@@ -10,6 +10,7 @@ function DisputesPage() {
     const [error, setError] = useState('');
     const [resolving, setResolving] = useState(null);
     const [split, setSplit] = useState({ renterRupees: '', notes: '' });
+    const [resolveBusy, setResolveBusy] = useState(false);
 
     async function load(which = tab) {
         setDisputes(null);
@@ -33,6 +34,7 @@ function DisputesPage() {
     async function submitResolution(dispute) {
         const deposit = dispute.bookingId.depositAmount;
         const renterRefund = rupeesToPaise(split.renterRupees || 0);
+        setResolveBusy(true);
         try {
             await resolveDispute(dispute._id, {
                 renterRefund,
@@ -44,6 +46,8 @@ function DisputesPage() {
             load();
         } catch (err) {
             alert(err.response?.data?.message || 'Could not resolve');
+        } finally {
+            setResolveBusy(false);
         }
     }
 
@@ -135,7 +139,7 @@ function DisputesPage() {
                                             className={`${input} text-sm`}
                                         />
                                         <div className="flex gap-2">
-                                            <button onClick={() => submitResolution(d)} className={`${btnPrimary} text-xs`}>
+                                            <button onClick={() => submitResolution(d)} className={`${btnPrimary} text-xs`} disabled={resolveBusy}>
                                                 Resolve
                                             </button>
                                             <button onClick={() => setResolving(null)} className={`${btnSecondary} text-xs`}>

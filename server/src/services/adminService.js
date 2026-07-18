@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const Item = require('../models/Item');
 
+const escapeRegex = require('../utils/escapeRegex');
+
 function httpError(status, message) {
     const err = new Error(message);
     err.status = status;
@@ -14,8 +16,8 @@ async function listUsers({ search, role, page }) {
     if (role) query.role = role;
     if (search) {
         query.$or = [
-            { name: new RegExp(search, 'i') },
-            { email: new RegExp(search, 'i') },
+            { name: new RegExp(escapeRegex(search), 'i') },
+            { email: new RegExp(escapeRegex(search), 'i') },
         ];
     }
 

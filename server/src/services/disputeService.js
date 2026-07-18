@@ -76,46 +76,54 @@ async function resolveDispute(disputeId, adminId, { renterRefund, lenderCompensa
     const charge = await Payment.findOne({ bookingId: booking._id, type: 'charge', status: 'paid' });
     if (!charge) throw httpError(409, 'No captured payment found for this booking');
 
-    if (renterRefund > 0) {
-        const refund = await razorpay.payments.refund(charge.razorpayPaymentId, { amount: renterRefund });
+    const claimed = await Dispute.findOneAndUpdate(
+        { _id: disputeId, status: 'open' },
+        { status: 'resolved', resolution: { renterRefund, lenderCompensation, notes, resolvedBy: adminId } },
+        { returnDocument: 'after' }
+    );
+    if (!claimed) throw httpError(409, 'This dispute is already resolved');
+
+    try {
+        if (renterRefund > 0) {
+            const refund = await razorpay.payments.refund(charge.razorpayPaymentId, { amount: renterRefund });
+            await Payment.create({
+                bookingId: booking._id,
+                type: 'depositRefund',
+                amount: renterRefund,
+                razorpayRefundId: refund.id,
+                status: 'refunded',
+            });
+        }
+
+        if (lenderCompensation > 0) {
+            await Payment.create({
+                bookingId: booking._id,
+                type: 'penaltyDeduction',
+                amount: lenderCompensation,
+                status: 'paid',
+            });
+        }
+
         await Payment.create({
             bookingId: booking._id,
-            type: 'depositRefund',
-            amount: renterRefund,
-            razorpayRefundId: refund.id,
-            status: 'refunded',
+            type: 'lenderPayout',
+            amount: booking.rentAmount - booking.platformFee + lenderCompensation,
+            status: 'created',
         });
+
+        booking.status = 'completed';
+        booking.latePenalty = lenderCompensation;
+        booking.returnConfirmedAt = new Date();
+        await booking.save();
+    } catch (err) {
+        await Dispute.updateOne({ _id: disputeId }, { status: 'open', $unset: { resolution: 1 } });
+        throw err;
     }
-
-    if (lenderCompensation > 0) {
-        await Payment.create({
-            bookingId: booking._id,
-            type: 'penaltyDeduction',
-            amount: lenderCompensation,
-            status: 'paid',
-        });
-    }
-
-    await Payment.create({
-        bookingId: booking._id,
-        type: 'lenderPayout',
-        amount: booking.rentAmount - booking.platformFee + lenderCompensation,
-        status: 'created',
-    });
-
-    dispute.status = 'resolved';
-    dispute.resolution = { renterRefund, lenderCompensation, notes, resolvedBy: adminId };
-    await dispute.save();
-
-    booking.status = 'completed';
-    booking.latePenalty = lenderCompensation;
-    booking.returnConfirmedAt = new Date();
-    await booking.save();
 
     await recomputeTrustScore(booking.renterId);
     await recomputeTrustScore(booking.lenderId);
 
-    return dispute;
+    return claimed;
 }
 
 module.exports = { raiseDispute, listDisputes, resolveDispute };

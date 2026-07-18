@@ -18,6 +18,7 @@ function OrdersReceivedPage() {
     const [submittingDispute, setSubmittingDispute] = useState(false);
     const [reviewedIds, setReviewedIds] = useState([]);
     const [reviewOpen, setReviewOpen] = useState(null);
+    const [actionBusy, setActionBusy] = useState(false);
 
     useEffect(() => {
         fetchReceivedBookings()
@@ -27,28 +28,24 @@ function OrdersReceivedPage() {
     }, []);
 
     async function act(booking, action) {
+        if (actionBusy) return;
         setActionError('');
-        try {
-            const updated = await (action === 'approve' ? approveBooking(booking._id) : declineBooking(booking._id));
-            setBookings(bookings.map((b) => (b._id === booking._id ? { ...b, status: updated.status } : b)));
-        } catch (err) {
-            setActionError(err.response?.data?.message || `Could not ${action} this booking`);
-        }
-    }
+        setActionBusy(true);
 
-    async function act(booking, action) {
-        setActionError('');
         const calls = {
             approve: approveBooking,
             decline: declineBooking,
             handover: markHandover,
             confirmReturn: confirmReturn,
         };
+
         try {
             const updated = await calls[action](booking._id);
             setBookings(bookings.map((b) => (b._id === booking._id ? { ...b, ...updated } : b)));
         } catch (err) {
             setActionError(err.response?.data?.message || `Could not ${action} this booking`);
+        } finally {
+            setActionBusy(false);
         }
     }
 
@@ -109,21 +106,21 @@ function OrdersReceivedPage() {
                                 <StatusBadge status={b.status} />
                                 {b.status === 'requested' && (
                                     <div className="flex gap-2">
-                                        <button onClick={() => act(b, 'approve')} className={`${btnPrimary} text-xs`}>
+                                        <button onClick={() => act(b, 'approve')} className={`${btnPrimary} text-xs`} disabled={actionBusy}>
                                             Approve
                                         </button>
-                                        <button onClick={() => act(b, 'decline')} className={`${btnSecondary} text-xs`}>
+                                        <button onClick={() => act(b, 'decline')} className={`${btnSecondary} text-xs`} disabled={actionBusy}>
                                             Decline
                                         </button>
                                     </div>
                                 )}
                                 {b.status === 'paid' && (
-                                    <button onClick={() => act(b, 'handover')} className={`${btnPrimary} text-xs`}>
+                                    <button onClick={() => act(b, 'handover')} className={`${btnPrimary} text-xs`} disabled={actionBusy}>
                                         Confirm handover
                                     </button>
                                 )}
                                 {['active', 'returnRequested'].includes(b.status) && (
-                                    <button onClick={() => act(b, 'confirmReturn')} className={`${btnPrimary} text-xs`}>
+                                    <button onClick={() => act(b, 'confirmReturn')} className={`${btnPrimary} text-xs`} disabled={actionBusy}>
                                         Confirm return
                                     </button>
                                 )}

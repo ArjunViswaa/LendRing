@@ -33,47 +33,64 @@ async function confirmReturn(bookingId, lenderId) {
     const latePenalty = Math.min(lateDays * dailyRate, booking.depositAmount);
     const refundAmount = booking.depositAmount - latePenalty;
 
-    if (refundAmount > 0) {
-        const refund = await razorpay.payments.refund(charge.razorpayPaymentId, {
-            amount: refundAmount,
-        });
+    const previousStatus = booking.status;
+
+    const claimed = await Booking.findOneAndUpdate(
+        { _id: bookingId, status: { $in: ['active', 'returnRequested'] } },
+        {
+            status: 'completed',
+            lateDays,
+            latePenalty,
+            returnMarkedAt: returnedAt,
+            returnConfirmedAt: new Date(),
+        },
+        { returnDocument: 'after' }
+    );
+    if (!claimed) throw httpError(409, 'This booking is already settled');
+
+    try {
+        if (refundAmount > 0) {
+            const refund = await razorpay.payments.refund(charge.razorpayPaymentId, {
+                amount: refundAmount,
+            });
+            await Payment.create({
+                bookingId,
+                type: 'depositRefund',
+                amount: refundAmount,
+                razorpayRefundId: refund.id,
+                status: 'refunded',
+            });
+        }
+
+        if (latePenalty > 0) {
+            await Payment.create({
+                bookingId,
+                type: 'penaltyDeduction',
+                amount: latePenalty,
+                status: 'paid',
+            });
+        }
+
         await Payment.create({
             bookingId,
-            type: 'depositRefund',
-            amount: refundAmount,
-            razorpayRefundId: refund.id,
-            status: 'refunded',
+            type: 'lenderPayout',
+            amount: booking.rentAmount - booking.platformFee + latePenalty,
+            status: 'created',
         });
+    } catch (err) {
+        await Booking.updateOne(
+            { _id: bookingId },
+            { status: previousStatus, lateDays: 0, latePenalty: 0, $unset: { returnConfirmedAt: 1 } }
+        );
+        throw err;
     }
-
-    if (latePenalty > 0) {
-        await Payment.create({
-            bookingId,
-            type: 'penaltyDeduction',
-            amount: latePenalty,
-            status: 'paid',
-        });
-    }
-
-    await Payment.create({
-        bookingId,
-        type: 'lenderPayout',
-        amount: booking.rentAmount - booking.platformFee + latePenalty,
-        status: 'created',
-    });
-    booking.status = 'completed';
-    booking.lateDays = lateDays;
-    booking.latePenalty = latePenalty;
-    booking.returnMarkedAt = returnedAt;
-    booking.returnConfirmedAt = new Date();
-    const saved = await booking.save();
 
     await recomputeTrustScore(booking.renterId);
     await recomputeTrustScore(booking.lenderId);
 
-    emailService.notifyReturnSettled(booking._id);
+    emailService.notifyReturnSettled(bookingId);
 
-    return saved;
+    return claimed;
 }
 
 module.exports = { confirmReturn };

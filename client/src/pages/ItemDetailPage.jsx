@@ -7,6 +7,7 @@ import { fetchItemDetail } from '../api/browse';
 import { requestBooking } from '../api/bookings';
 import { formatPaise } from '../utils/money';
 import { card, input, btnPrimary } from '../utils/ui';
+import Spinner from '../components/Spinner';
 
 function countDays(start, end) {
     const ms = new Date(end) - new Date(start);
@@ -58,7 +59,7 @@ function ItemDetailPage() {
         );
     }
 
-    if (!item) return <p className="text-gray-500">Loading...</p>;
+    if (!item) return <Spinner label="Loading item details" />;
 
     const lender = item.lenderId;
     const days = dates.start && dates.end ? countDays(dates.start, dates.end) : 0;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchUsers, updateUserFlags } from '../../api/admin';
 import { card, input, btnPrimary, btnSecondary, btnDanger } from '../../utils/ui';
+import Spinner from '../../components/Spinner';
 
 function UsersPage() {
     const [data, setData] = useState(null);
@@ -51,7 +52,7 @@ function UsersPage() {
             </form>
 
             {!data ? (
-                <p className="mt-6 text-gray-500">Loading...</p>
+                <Spinner label="Loading users" />
             ) : (
                 <>
                     <div className={`${card} mt-4 overflow-x-auto`}>

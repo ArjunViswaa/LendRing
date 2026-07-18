@@ -3,6 +3,7 @@ import { fetchDisputes, resolveDispute } from '../../api/disputes';
 import { formatPaise, rupeesToPaise, paiseToRupees } from '../../utils/money';
 import { formatDateRange } from '../../utils/dates';
 import { card, input, btnPrimary, btnSecondary } from '../../utils/ui';
+import Spinner from '../../components/Spinner';
 
 function DisputesPage() {
     const [tab, setTab] = useState('open');
@@ -71,7 +72,7 @@ function DisputesPage() {
             </div>
 
             {!disputes ? (
-                <p className="mt-6 text-gray-500">Loading...</p>
+                <p className="mt-6 text-gray-500"><Spinner /></p>
             ) : disputes.length === 0 ? (
                 <p className="mt-6 text-gray-500">No {tab} disputes.</p>
             ) : (

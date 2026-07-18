@@ -3,6 +3,8 @@ import { searchItems } from '../../api/browse';
 import { rupeesToPaise } from '../../utils/money';
 import { input, btnPrimary, btnSecondary } from '../../utils/ui';
 import ItemCard from '../../components/ItemCard';
+import Spinner from '../../components/Spinner';
+import EmptyState from '../../components/EmptyState';
 
 const CATEGORIES = ['electronics', 'tools', 'outdoor', 'events', 'sports', 'other'];
 
@@ -106,7 +108,7 @@ function BrowsePage() {
 
             <div className="mt-6">
                 {error && <p className="text-red-600">{error}</p>}
-                {loading && <p className="text-gray-500">Finding items...</p>}
+                {loading && <Spinner label="Finding items" />}
 
                 {!loading && !error && result && (
                     <>
@@ -115,9 +117,11 @@ function BrowsePage() {
                         </p>
 
                         {result.items.length === 0 ? (
-                            <p className="text-gray-500">
-                                Nothing matches those filters. Try widening your search.
-                            </p>
+                            <EmptyState
+                                icon="🔍"
+                                title="No items match those filters"
+                                message="Try widening your search or clearing filters."
+                            />
                         ) : (
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                 {result.items.map((item) => (

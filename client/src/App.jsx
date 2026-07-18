@@ -14,6 +14,7 @@ import DisputesPage from './pages/admin/DisputesPage';
 import UsersPage from './pages/admin/UsersPage';
 import ModerateListingsPage from './pages/admin/ModerateListingsPage';
 import TransactionsPage from './pages/admin/TransactionsPage';
+import LandingPage from './pages/LandingPage';
 
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -46,7 +47,7 @@ function DashboardHome() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 

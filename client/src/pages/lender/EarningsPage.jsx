@@ -3,6 +3,7 @@ import { fetchEarnings } from '../../api/payments';
 import { formatPaise } from '../../utils/money';
 import { formatDateRange } from '../../utils/dates';
 import { card } from '../../utils/ui';
+import Spinner from '../../components/Spinner';
 
 function StatCard({ label, value, hint }) {
     return (
@@ -25,7 +26,7 @@ function EarningsPage() {
     }, []);
 
     if (error) return <p className="text-red-600">{error}</p>;
-    if (!data) return <p className="text-gray-500">Loading earnings...</p>;
+    if (!data) return <Spinner label="Loading earnings" />;
 
     const { summary, payments } = data;
 

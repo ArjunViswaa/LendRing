@@ -5,6 +5,7 @@ import { formatDateRange } from '../../utils/dates';
 import { card, btnPrimary, btnSecondary, btnDanger, input } from '../../utils/ui';
 import StatusBadge from '../../components/StatusBadge';
 import ReviewForm from '../../components/ReviewForm';
+import Spinner from '../../components/Spinner';
 
 import { fetchGivenReviews } from '../../api/reviews';
 import { raiseDispute } from '../../api/disputes';
@@ -65,7 +66,7 @@ function OrdersReceivedPage() {
     }
 
     if (error) return <p className="text-red-600">{error}</p>;
-    if (!bookings) return <p className="text-gray-500">Loading bookings...</p>;
+    if (!bookings) return <Spinner label="Loading bookings" />;
 
     const pendingCount = bookings.filter((b) => b.status === 'requested').length;
 

@@ -3,6 +3,7 @@ import { fetchAllPayments } from '../../api/admin';
 import { formatPaise } from '../../utils/money';
 import { formatDate } from '../../utils/dates';
 import { card, btnSecondary } from '../../utils/ui';
+import Spinner from '../../components/Spinner';
 
 const TYPE_STYLES = {
     charge: 'bg-brand-100 text-brand-700',
@@ -30,7 +31,7 @@ function TransactionsPage() {
             </p>
 
             {!data ? (
-                <p className="mt-6 text-gray-500">Loading...</p>
+                <Spinner label="Loading transactions" />
             ) : (
                 <>
                     <div className={`${card} mt-4 overflow-x-auto`}>

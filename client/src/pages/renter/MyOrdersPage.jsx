@@ -8,6 +8,8 @@ import { formatDateRange } from '../../utils/dates';
 import { card, btnPrimary, btnDanger, btnSecondary } from '../../utils/ui';
 import StatusBadge from '../../components/StatusBadge';
 import ReviewForm from '../../components/ReviewForm';
+import Spinner from '../../components/Spinner';
+import EmptyState from '../../components/EmptyState';
 import { fetchGivenReviews } from '../../api/reviews';
 
 function MyOrdersPage() {
@@ -77,7 +79,7 @@ function MyOrdersPage() {
     }
 
     if (error) return <p className="text-red-600">{error}</p>;
-    if (!bookings) return <p className="text-gray-500">Loading your orders...</p>;
+    if (!bookings) return <Spinner label="Loading your orders" />;
 
     return (
         <div className="max-w-3xl">
@@ -91,10 +93,13 @@ function MyOrdersPage() {
             )}
 
             {bookings.length === 0 ? (
-                <p className="mt-6 text-gray-500">
-                    No orders yet.{' '}
-                    <Link to="/dashboard/browse" className="underline">Browse items</Link> to get started.
-                </p>
+                <EmptyState
+                    icon="📦"
+                    title="No orders yet"
+                    message="Find something to rent and your bookings will show up here."
+                    actionTo="/dashboard/browse"
+                    actionLabel="Browse items"
+                />
             ) : (
                 <div className="mt-6 flex flex-col gap-3">
                     {bookings.map((b) => (

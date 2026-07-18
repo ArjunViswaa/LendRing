@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchAdminItems, updateItemStatus } from '../../api/admin';
 import { formatPaise } from '../../utils/money';
 import { card, input, btnSecondary, btnDanger } from '../../utils/ui';
+import Spinner from '../../components/Spinner';
 
 function ModerateListingsPage() {
     const [data, setData] = useState(null);
@@ -38,7 +39,7 @@ function ModerateListingsPage() {
             </select>
 
             {!data ? (
-                <p className="mt-6 text-gray-500">Loading...</p>
+                <Spinner label="Loading listings" />
             ) : (
                 <div className={`${card} mt-4 overflow-x-auto`}>
                     <table className="w-full text-sm">

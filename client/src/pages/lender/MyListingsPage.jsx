@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchMyItems, updateItem, deleteItem } from '../../api/items';
 import { formatPaise } from '../../utils/money';
+import Spinner from '../../components/Spinner';
+import EmptyState from '../../components/EmptyState';
 
 function MyListingsPage() {
     const [items, setItems] = useState(null);
@@ -30,7 +32,7 @@ function MyListingsPage() {
     }
 
     if (error) return <p className="text-red-600">{error}</p>;
-    if (!items) return <p className="text-gray-500">Loading your listings...</p>;
+    if (!items) return <Spinner label="Loading your listings" />;
 
     return (
         <div>
@@ -45,9 +47,13 @@ function MyListingsPage() {
             </div>
 
             {items.length === 0 ? (
-                <p className="text-gray-500">
-                    Nothing listed yet. Add your first item and start earning from things you already own.
-                </p>
+                <EmptyState
+                    icon="🏷️"
+                    title="Nothing listed yet"
+                    message="Add your first item and start earning from things you already own."
+                    actionTo="/dashboard/add-item"
+                    actionLabel="Add item"
+                />
             ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {items.map((item) => (

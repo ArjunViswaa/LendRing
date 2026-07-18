@@ -11,6 +11,9 @@ import MyOrdersPage from './pages/renter/MyOrdersPage';
 import OrdersReceivedPage from './pages/lender/OrdersReceivedPage';
 import EarningsPage from './pages/lender/EarningsPage';
 import DisputesPage from './pages/admin/DisputesPage';
+import UsersPage from './pages/admin/UsersPage';
+import ModerateListingsPage from './pages/admin/ModerateListingsPage';
+import TransactionsPage from './pages/admin/TransactionsPage';
 
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -71,9 +74,9 @@ function App() {
         <Route path="earnings" element={<RequireRole role="lender"><EarningsPage /></RequireRole>} />
 
         {/* admin */}
-        <Route path="users" element={<RequireRole role="admin"><Placeholder title="Users" /></RequireRole>} />
-        <Route path="moderate-listings" element={<RequireRole role="admin"><Placeholder title="Listings" /></RequireRole>} />
-        <Route path="transactions" element={<RequireRole role="admin"><Placeholder title="Transactions" /></RequireRole>} />
+        <Route path="users" element={<RequireRole role="admin"><UsersPage /></RequireRole>} />
+        <Route path="moderate-listings" element={<RequireRole role="admin"><ModerateListingsPage /></RequireRole>} />
+        <Route path="transactions" element={<RequireRole role="admin"><TransactionsPage /></RequireRole>} />
         <Route path="disputes" element={<RequireRole role="admin"><DisputesPage /></RequireRole>} />
       </Route>
     </Routes>

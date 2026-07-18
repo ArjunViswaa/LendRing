@@ -35,6 +35,8 @@ app.use('/api/disputes', require('./routes/disputeRoutes'));
 
 app.use('/api/reviews', require('./routes/reviewRoutes'));
 
+app.use('/api/admin', require('./routes/adminRoutes'));
+
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });

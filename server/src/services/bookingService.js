@@ -1,6 +1,7 @@
 const Booking = require('../models/Booking');
 const Item = require('../models/Item');
 const { countDays, todayUtc } = require('../utils/dates');
+const emailService = require('./emailService');
 
 const PLATFORM_FEE_PERCENT = 10;
 const BLOCKING_STATUSES = ['approved', 'paid', 'active', 'returnRequested', 'disputed'];
@@ -51,7 +52,7 @@ async function requestBooking(renterId, { itemId, startDate, endDate }) {
     const rentAmount = days * item.ratePerDay;
     const platformFee = Math.round((rentAmount * PLATFORM_FEE_PERCENT) / 100);
 
-    return Booking.create({
+    const booking = await Booking.create({
         itemId,
         renterId,
         lenderId: item.lenderId,
@@ -62,6 +63,10 @@ async function requestBooking(renterId, { itemId, startDate, endDate }) {
         platformFee,
         totalAmount: rentAmount + item.depositAmount,
     });
+
+    emailService.notifyBookingRequested(booking._id);
+
+    return booking;
 }
 
 async function getOwnedBooking(bookingId, userId, field) {
@@ -87,7 +92,9 @@ async function approveBooking(bookingId, lenderId) {
 
     booking.status = 'approved';
 
-    return booking.save();
+    const saved = await booking.save();
+    emailService.notifyBookingApproved(saved._id);
+    return saved;
 }
 
 async function declineBooking(bookingId, lenderId) {

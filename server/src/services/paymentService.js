@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const razorpay = require('../config/razorpay');
 const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
+const emailService = require('./emailService');
 
 function httpError(status, message) {
     const err = new Error(message);
@@ -61,6 +62,8 @@ async function verifyPayment(renterId, { orderId, paymentId, signature }) {
         throw httpError(403, 'This payment does not involve you');
     }
 
+    const wasAlreadyPaid = booking.status === 'paid';
+
     const expected = crypto
         .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
         .update(`${orderId}|${paymentId}`)
@@ -80,6 +83,8 @@ async function verifyPayment(renterId, { orderId, paymentId, signature }) {
 
     booking.status = 'paid';
     await booking.save();
+
+    if (!wasAlreadyPaid) emailService.notifyPaymentReceived(booking._id);
 
     return booking;
 }

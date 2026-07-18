@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
+const emailService = require('../services/emailService');
 
 function httpError(status, message) {
     const err = new Error(message);
@@ -54,10 +55,12 @@ async function handleWebhookEvent(rawBody, signature, eventId) {
     await payment.save();
 
     if (event.event === 'payment.captured') {
-        await Booking.updateOne(
+        const updated = await Booking.updateOne(
             { _id: payment.bookingId, status: 'approved' },
             { status: 'paid' }
         );
+        
+        if (updated.modifiedCount === 1) emailService.notifyPaymentReceived(payment.bookingId);
     }
 
     return { outcome: 'processed', event: event.event, eventId };

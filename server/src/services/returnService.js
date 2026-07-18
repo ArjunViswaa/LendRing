@@ -3,6 +3,7 @@ const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
 const { countDays } = require('../utils/dates');
 const { recomputeTrustScore } = require('./trustScoreService');
+const emailService = require('./emailService');
 
 const DAY_MS = 1000 * 60 * 60 * 24;
 
@@ -60,16 +61,19 @@ async function confirmReturn(bookingId, lenderId) {
         amount: booking.rentAmount - booking.platformFee + latePenalty,
         status: 'created',
     });
-
-    await recomputeTrustScore(booking.renterId);
-    await recomputeTrustScore(booking.lenderId);
-
     booking.status = 'completed';
     booking.lateDays = lateDays;
     booking.latePenalty = latePenalty;
     booking.returnMarkedAt = returnedAt;
     booking.returnConfirmedAt = new Date();
-    return booking.save();
+    const saved = await booking.save();
+
+    await recomputeTrustScore(booking.renterId);
+    await recomputeTrustScore(booking.lenderId);
+
+    emailService.notifyReturnSettled(booking._id);
+
+    return saved;
 }
 
 module.exports = { confirmReturn };

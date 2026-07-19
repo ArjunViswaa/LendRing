@@ -42,7 +42,9 @@ function RegisterPage() {
                 onSubmit={handleSubmit}
                 className="w-full max-w-sm bg-white border border-gray-200 rounded-lg p-8 flex flex-col gap-4"
             >
-                <h1 className="text-2xl font-semibold text-gray-900">Join Lend-Ring</h1>
+                <img src="/lendring-icon-light.svg" alt="Lend-Ring" className="h-12 mx-auto" />
+                <img src="/lendring-wordmark-light.svg" alt="Lend-Ring" className="h-15" />
+                <h1 className="text-2xl font-semibold text-gray-900">Create a Lend-Ring Account</h1>
 
                 {error && <p className="text-sm text-red-600">{error}</p>}
 

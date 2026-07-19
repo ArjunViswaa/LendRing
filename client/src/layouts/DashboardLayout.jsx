@@ -38,7 +38,7 @@ function DashboardLayout() {
     const sidebar = (
         <aside className="w-60 shrink-0 bg-gray-900 text-gray-100 flex flex-col h-full">
             <div className="px-5 py-6 border-b border-gray-700">
-                <p className="text-lg font-semibold">Lend-Ring</p>
+                <img src="/lendring-wordmark-dark.svg" alt="Lend-Ring" className="h-8" />
                 <p className="text-xs text-gray-400 mt-1 capitalize">{user.role} account</p>
             </div>
 
@@ -96,7 +96,7 @@ function DashboardLayout() {
                     >
                         ☰
                     </button>
-                    <span className="font-semibold">Lend-Ring</span>
+                    <img src="/lendring-wordmark-dark.svg" alt="Lend-Ring" className="h-8" />
                 </header>
 
                 <main className="flex-1 min-h-0 p-4 md:p-8 overflow-y-auto">

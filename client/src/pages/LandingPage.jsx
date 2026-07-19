@@ -20,7 +20,7 @@ function LandingPage() {
         <div className="min-h-screen bg-gray-50">
             {/* nav */}
             <header className="flex items-center justify-between px-6 py-4 max-w-6xl mx-auto">
-                <span className="text-xl font-semibold text-brand-700">Lend-Ring</span>
+                <img src="/lendring-wordmark-light.svg" alt="Lend-Ring" className="h-9" />
                 <nav className="flex items-center gap-3 text-sm">
                     {user ? (
                         <Link to="/dashboard" className="rounded-lg bg-brand-600 px-4 py-2 font-semibold text-white hover:bg-brand-700">

@@ -1,0 +1,11 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- near-complete ring, single clean gap at lower-right -->
+  <path d="M 123 164 A 68 68 0 1 1 164 123" fill="none" stroke="#4aa3e6" stroke-width="14" stroke-linecap="round"/>
+  <!-- L (blue) -->
+  <path d="M 70 60 L 70 126 L 94 126" fill="none" stroke="#4aa3e6" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- R (orange): stem, bowl, leg -->
+  <path d="M 100 126 L 100 60 L 117 60 A 17 17 0 0 1 117 94 L 100 94" fill="none" stroke="#f79340" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 110 94 L 129 126" fill="none" stroke="#f79340" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- spanner in the gap: chunky handle + wide open jaw (butt caps read as a tool) -->
+  <line x1="134" y1="132" x2="158" y2="156" stroke="#f79340" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 162 170 A 12 12 0 1 1 175 157" fill="none" stroke="#f79340" stroke-width="12" stroke-linecap="butt"/></svg>
